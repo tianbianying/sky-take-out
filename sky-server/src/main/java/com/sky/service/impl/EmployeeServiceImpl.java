@@ -6,6 +6,7 @@ import com.sky.constant.JwtClaimsConstant;
 import com.sky.constant.MessageConstant;
 import com.sky.constant.PasswordConstant;
 import com.sky.constant.StatusConstant;
+import com.sky.context.BaseContext;
 import com.sky.dto.EmployeeDTO;
 import com.sky.dto.EmployeeLoginDTO;
 import com.sky.dto.EmployeePageQueryDTO;
@@ -17,6 +18,7 @@ import com.sky.mapper.EmployeeMapper;
 import com.sky.result.PageResult;
 import com.sky.service.EmployeeService;
 import com.sky.utils.ThreadLocalUtil;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -52,7 +54,6 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
 
         // 密码比对
-        // TODO 后期需要进行md5加密，然后再进行比对
         if (!password.equals(employee.getPassword())) {
             // 密码错误
             throw new PasswordErrorException(MessageConstant.PASSWORD_ERROR);
@@ -115,6 +116,34 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .status(status)
                 .build();
 
+        employeeMapper.update(employee);
+    }
+
+    /**
+     * @description: 根据id查询数据
+     * @title: getById
+     * @param: id
+     */
+    @Override
+    public Employee getById(Integer id) {
+        Employee employee = employeeMapper.getEmployee(id);
+        employee.setPassword("****");
+        return employee;
+    }
+
+    /**
+     * @description: 进行员工信息的修改
+     * @title: update
+     * @param: employeeDTO
+     */
+    @Override
+    public void update(EmployeeDTO employeeDTO) {
+        // 将employeeDTO对象转化为employee对象
+        Employee employee = new Employee();
+        BeanUtils.copyProperties(employeeDTO, employee);
+        employee.setUpdateTime(LocalDateTime.now());
+        Map map = (Map) ThreadLocalUtil.get();
+        employee.setUpdateUser(Long.valueOf((Integer) map.get(JwtClaimsConstant.EMP_ID)));
         employeeMapper.update(employee);
     }
 
