@@ -20,10 +20,27 @@ public interface EmployeeMapper {
     @Select("select * from employee where username = #{username}")
     Employee getByUsername(String username);
 
+    /**
+     * @description: 用来插入员工
+     * @title: insetEmployee
+     * @param: employee
+     */
     @Insert("insert into employee (name,username,password,phone,sex,id_number,status,create_time,update_time,create_user,update_user) " +
             "values " +
             "(#{name},#{username},#{password},#{phone},#{sex},#{idNumber},#{status},#{createTime},#{updateTime},#{createUser},#{updateUser})")
     void insetEmployee(Employee employee);
 
+    /**
+     * @description: 用来获取员工列表
+     * @title: getList
+     * @param: employeePageQueryDTO
+     */
     List<Employee> getList(EmployeePageQueryDTO employeePageQueryDTO);
+
+    /**
+     * @description: 用来进行员工的修改
+     * @title: update
+     * @param: employee
+     */
+    void update(Employee employee);
 }

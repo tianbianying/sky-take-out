@@ -91,10 +91,27 @@ public class EmployeeController {
         return Result.success();
     }
 
+    /**
+     * @title: getEmpList
+     * @param: employeePageQueryDTO
+     * @description: 员工分页查询
+     */
     @GetMapping("/page")
     @ApiOperation("员工分页查询")
     public Result<PageResult> getEmpList(EmployeePageQueryDTO employeePageQueryDTO) {
         return Result.success(employeeService.getList(employeePageQueryDTO));
+    }
+
+    /**
+     * @title: startOrStop
+     * @param: status id
+     * @description: 启用禁用员工账号
+     */
+    @PostMapping("/status/{status}")
+    @ApiOperation("启用禁用员工账号")
+    public Result startOrStop(@PathVariable Integer status, Long id) {
+        employeeService.startOrStop(status, id);
+        return Result.success();
     }
 
 
