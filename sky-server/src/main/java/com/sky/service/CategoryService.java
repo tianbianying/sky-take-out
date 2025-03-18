@@ -1,5 +1,6 @@
 package com.sky.service;
 
+import com.sky.dto.CategoryDTO;
 import com.sky.dto.CategoryPageQueryDTO;
 import com.sky.result.PageResult;
 
@@ -16,4 +17,32 @@ public interface CategoryService {
      * @param: []
      */
     PageResult getList(CategoryPageQueryDTO categoryPageQueryDTO);
+
+    /**
+     * @description: 添加新的菜品分类
+     * @title: save
+     * @param: [categoryDTO]
+     */
+    void save(CategoryDTO categoryDTO);
+
+    /**
+     * @description: 根据id删除菜品分类
+     * @title: delById
+     * @param: [id]
+     */
+    void delById(Long id);
+
+    /**
+     * @description: 根据id修改分类状态
+     * @title: startOrStop
+     * @param: [status, id]
+     */
+    void startOrStop(Integer status, Long id);
+
+    /**
+     * @description: 修改分类
+     * @title: update
+     * @param: [categoryDTO]
+     */
+    void update(CategoryDTO categoryDTO);
 }

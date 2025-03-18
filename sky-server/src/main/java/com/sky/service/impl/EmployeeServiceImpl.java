@@ -141,9 +141,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         // 将employeeDTO对象转化为employee对象
         Employee employee = new Employee();
         BeanUtils.copyProperties(employeeDTO, employee);
-        employee.setUpdateTime(LocalDateTime.now());
         Map map = (Map) ThreadLocalUtil.get();
+
+        employee.setUpdateTime(LocalDateTime.now());
         employee.setUpdateUser(Long.valueOf((Integer) map.get(JwtClaimsConstant.EMP_ID)));
+
         employeeMapper.update(employee);
     }
 
