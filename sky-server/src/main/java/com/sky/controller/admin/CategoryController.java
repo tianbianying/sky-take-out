@@ -11,8 +11,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import javax.validation.Valid;
-import javax.validation.groups.Default;
+import java.util.List;
 
 /**
  * @description: 分类管理
@@ -22,6 +21,7 @@ import javax.validation.groups.Default;
 @RestController
 @RequestMapping("/admin/category")
 @Api(tags = "菜品分类相关接口")
+@Validated
 public class CategoryController {
     @Resource
     private CategoryService categoryService;
@@ -35,6 +35,17 @@ public class CategoryController {
     @ApiOperation("获取分类分页")
     public Result<PageResult> getCategoryList(@Validated CategoryPageQueryDTO categoryPageQueryDTO) {
         return Result.success(categoryService.getList(categoryPageQueryDTO));
+    }
+
+    /**
+     * @description: 根据类型查询分类
+     * @title: getCategoryByType
+     * @param: [type]
+     */
+    @GetMapping("/list")
+    @ApiOperation("根据类型获取分类")
+    public Result<List> getCategoryByType(Integer type) {
+        return Result.success(categoryService.getCategoryByType(type));
     }
 
     /**

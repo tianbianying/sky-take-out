@@ -4,6 +4,8 @@ import com.sky.dto.CategoryDTO;
 import com.sky.dto.CategoryPageQueryDTO;
 import com.sky.result.PageResult;
 
+import java.util.List;
+
 /**
  * @description: 用户分类的服务层接口
  * @author: Excell
@@ -45,4 +47,11 @@ public interface CategoryService {
      * @param: [categoryDTO]
      */
     void update(CategoryDTO categoryDTO);
+
+    /**
+     * @description:
+     * @title: getCategoryByType
+     * @param: [type]
+     */
+    List getCategoryByType(Integer type);
 }

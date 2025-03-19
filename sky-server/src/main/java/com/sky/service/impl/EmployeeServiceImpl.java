@@ -78,14 +78,14 @@ public class EmployeeServiceImpl implements EmployeeService {
         // 给员工状态进行赋值,1是允许使用
         employee.setStatus(StatusConstant.ENABLE);
         // 创建时间
-        employee.setCreateTime(LocalDateTime.now());
-        // 修改时间
-        employee.setUpdateTime(LocalDateTime.now());
-        // 创建该员工的用户
-        Map map = (Map) ThreadLocalUtil.get();
-        employee.setCreateUser(Long.valueOf((Integer) map.get(JwtClaimsConstant.EMP_ID)));
-        // 修改该员工的用户
-        employee.setUpdateUser(Long.valueOf((Integer) map.get(JwtClaimsConstant.EMP_ID)));
+        // employee.setCreateTime(LocalDateTime.now());
+        // // 修改时间
+        // employee.setUpdateTime(LocalDateTime.now());
+        // // 创建该员工的用户
+        // Map map = (Map) ThreadLocalUtil.get();
+        // employee.setCreateUser(Long.valueOf((Integer) map.get(JwtClaimsConstant.EMP_ID)));
+        // // 修改该员工的用户
+        // employee.setUpdateUser(Long.valueOf((Integer) map.get(JwtClaimsConstant.EMP_ID)));
         employeeMapper.insetEmployee(employee);
     }
 
@@ -141,10 +141,10 @@ public class EmployeeServiceImpl implements EmployeeService {
         // 将employeeDTO对象转化为employee对象
         Employee employee = new Employee();
         BeanUtils.copyProperties(employeeDTO, employee);
-        Map map = (Map) ThreadLocalUtil.get();
-
-        employee.setUpdateTime(LocalDateTime.now());
-        employee.setUpdateUser(Long.valueOf((Integer) map.get(JwtClaimsConstant.EMP_ID)));
+        // Map map = (Map) ThreadLocalUtil.get();
+        //
+        // employee.setUpdateTime(LocalDateTime.now());
+        // employee.setUpdateUser(Long.valueOf((Integer) map.get(JwtClaimsConstant.EMP_ID)));
 
         employeeMapper.update(employee);
     }

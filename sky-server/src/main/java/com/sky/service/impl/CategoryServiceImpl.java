@@ -3,10 +3,15 @@ package com.sky.service.impl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.sky.constant.JwtClaimsConstant;
+import com.sky.constant.MessageConstant;
+import com.sky.constant.StatusConstant;
 import com.sky.dto.CategoryDTO;
 import com.sky.dto.CategoryPageQueryDTO;
 import com.sky.entity.Category;
+import com.sky.exception.DeletionNotAllowedException;
 import com.sky.mapper.CategoryMapper;
+import com.sky.mapper.DishMapper;
+import com.sky.mapper.SetmealMapper;
 import com.sky.result.PageResult;
 import com.sky.service.CategoryService;
 import com.sky.utils.ThreadLocalUtil;
@@ -15,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,6 +32,10 @@ import java.util.Map;
 public class CategoryServiceImpl implements CategoryService {
     @Resource
     private CategoryMapper categoryMapper;
+    @Resource
+    private DishMapper dishMapper;
+    @Resource
+    private SetmealMapper setmealMapper;
 
     /**
      * @param categoryPageQueryDTO
@@ -58,14 +68,14 @@ public class CategoryServiceImpl implements CategoryService {
         BeanUtils.copyProperties(categoryDTO, category);
 
         // 为新的分类对象赋值
-        category.setStatus(0);
-        category.setCreateTime(LocalDateTime.now());
+        category.setStatus(StatusConstant.DISABLE);
+        /*category.setCreateTime(LocalDateTime.now());
         category.setUpdateTime(LocalDateTime.now());
 
         Map map = (Map) ThreadLocalUtil.get();
 
         category.setCreateUser(Long.valueOf((Integer) map.get(JwtClaimsConstant.EMP_ID)));
-        category.setUpdateUser(Long.valueOf((Integer) map.get(JwtClaimsConstant.EMP_ID)));
+        category.setUpdateUser(Long.valueOf((Integer) map.get(JwtClaimsConstant.EMP_ID)));*/
 
         categoryMapper.addCategory(category);
     }
@@ -77,6 +87,19 @@ public class CategoryServiceImpl implements CategoryService {
      */
     @Override
     public void delById(Long id) {
+        // 查询当前分类是否关联了菜品，如果关联了就抛出业务异常
+        Integer count = dishMapper.countByCategoryId(id);
+        if (count > 0) {
+            // 当前分类下有菜品，不能删除
+            throw new DeletionNotAllowedException(MessageConstant.CATEGORY_BE_RELATED_BY_DISH);
+        }
+
+        // 查询当前分类是否关联了套餐，如果关联了就抛出业务异常
+        count = setmealMapper.countByCategoryId(id);
+        if (count > 0) {
+            // 当前分类下有菜品，不能删除
+            throw new DeletionNotAllowedException(MessageConstant.CATEGORY_BE_RELATED_BY_SETMEAL);
+        }
         categoryMapper.delById(id);
     }
 
@@ -103,12 +126,22 @@ public class CategoryServiceImpl implements CategoryService {
     public void update(CategoryDTO categoryDTO) {
         Category category = new Category();
         BeanUtils.copyProperties(categoryDTO, category);
-        Map map = (Map) ThreadLocalUtil.get();
-
-        category.setUpdateTime(LocalDateTime.now());
-        category.setUpdateUser(Long.valueOf((Integer) map.get(JwtClaimsConstant.EMP_ID)));
+        // Map map = (Map) ThreadLocalUtil.get();
+        //
+        // category.setUpdateTime(LocalDateTime.now());
+        // category.setUpdateUser(Long.valueOf((Integer) map.get(JwtClaimsConstant.EMP_ID)));
 
         categoryMapper.update(category);
+    }
+
+    /**
+     * @description:
+     * @title: getCategoryByType
+     * @param: [type]
+     */
+    @Override
+    public List getCategoryByType(Integer type) {
+        return categoryMapper.getListByType(type);
     }
 }
 
