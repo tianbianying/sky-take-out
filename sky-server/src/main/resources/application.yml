@@ -50,7 +50,7 @@ sky:
     #设置微信小程序的令牌
     user-secret-key: mytoken
     user-ttl: 7200000
-    user-token-name: token
+    user-token-name: authentication
   alioss:
     endpoint: ${sky.alioss.endpoint}
     access-key-id: ${sky.alioss.access-key-id}
