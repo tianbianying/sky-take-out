@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sky.mapper.DishMapper">
+    <select id="list" resultType="com.sky.vo.DishVO">
+        select d.id,
+        d.name,
+        d.category_id,
+        d.price,
+        d.image,
+        d.description,
+        d.status,
+        d.create_time,
+        d.update_time,
+        d.create_user,
+        d.update_user,
+        c.name as category_name
+        from dish d
+        left join category c on d.category_id = c.id
+        <where>
+            <trim prefixOverrides="AND">
+                <if test="categoryId!=null">
+                    AND d.category_id=#{categoryId}
+                </if>
+                <if test="name!=null">
+                    AND d.name like concat("%",#{name},"%")
+                </if>
+                <if test="status!=null">
+                    AND d.status=#{status}
+                </if>
+            </trim>
+        </where>
+
+    </select>
+
+    <select id="getStatus" resultType="java.lang.Integer">
+        select status from dish where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <delete id="delByIds">
+        delete
+        from dish
+        where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    
+    <update id="update">
+        update dish
+        <set>
+            <if test="name!=null">name=#{name},</if>
+            <if test="categoryId!=null">category_id=#{categoryId},</if>
+            <if test="price!=null">price=#{price},</if>
+            <if test="image!=null">image=#{image},</if>
+            <if test="description!=null">description=#{description},</if>
+            <if test="status!=null">status=#{status},</if>
+            <if test="updateTime!=null">update_time=#{updateTime},</if>
+            <if test="updateUser!=null">update_user=#{updateUser}</if>
+        </set>
+        where id=#{id}
+    </update>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
