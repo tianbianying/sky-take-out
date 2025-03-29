@@ -16,6 +16,7 @@ import com.sky.result.PageResult;
 import com.sky.service.CategoryService;
 import com.sky.utils.ThreadLocalUtil;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -30,11 +31,11 @@ import java.util.Map;
  */
 @Service
 public class CategoryServiceImpl implements CategoryService {
-    @Resource
+    @Autowired
     private CategoryMapper categoryMapper;
-    @Resource
+    @Autowired
     private DishMapper dishMapper;
-    @Resource
+    @Autowired
     private SetmealMapper setmealMapper;
 
     /**

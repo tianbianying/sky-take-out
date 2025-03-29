@@ -7,10 +7,12 @@ sky:
     username: root
     password: 123456
   alioss:
+    #将阿里云中的id和密钥配置到系统变量中
     endpoint: oss-cn-beijing.aliyuncs.com
     access-key-id: ${ALIYUN_ACCESS_KEY_ID}
     access-key-secret: ${ALIYUN_ACCESS_KEY_SECRET}
     bucket-name: yun-sky-take-out
+    #将微信小程序的id和密钥配置到系统变量中
   wechat:
     appid: ${APPID}
     secret: ${SECRET}

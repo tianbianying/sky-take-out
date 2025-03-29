@@ -3,6 +3,8 @@ package com.sky.controller.admin;
 import com.sky.result.Result;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,8 +18,9 @@ import javax.annotation.Resource;
 @RestController("adminShopControllerBean")
 @RequestMapping("/admin/shop")
 @Api(tags = "店铺营业状态相关接口")
+@Slf4j
 public class ShopController {
-    @Resource
+    @Autowired
     RedisTemplate redisTemplate;
 
     private final static String key = "SHOP_STATUS";

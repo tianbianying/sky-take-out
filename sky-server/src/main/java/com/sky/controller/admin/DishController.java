@@ -9,7 +9,9 @@ import com.sky.service.DishService;
 import com.sky.vo.DishVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Delete;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,8 +27,9 @@ import java.util.List;
 @RequestMapping("/admin/dish")
 @Api(tags = "菜品相关接口")
 @Validated
+@Slf4j
 public class DishController {
-    @Resource
+    @Autowired
     private DishService dishService;
 
     /**
