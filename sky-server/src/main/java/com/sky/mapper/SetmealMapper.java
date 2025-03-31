@@ -5,6 +5,7 @@ import com.sky.annotation.AutoAnnotation;
 import com.sky.dto.SetmealPageQueryDTO;
 import com.sky.entity.Setmeal;
 import com.sky.enumeration.OperationType;
+import com.sky.vo.DishItemVO;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
@@ -68,4 +69,21 @@ public interface SetmealMapper {
             "from setmeal " +
             "where id=#{id}")
     Setmeal getById(Long id);
+
+    /**
+     * @description: 条件查询
+     * @title: list
+     * @param: [setmeal]
+     */
+    List<Setmeal> list(Setmeal setmeal);
+
+    /**
+     * @description: 根据id查询菜品选项
+     * @title: getDishItemBySetmealId
+     * @param: [id]
+     */
+    @Select("select sd.name, sd.copies, d.image, d.description " +
+            "from setmeal_dish sd left join dish d on sd.dish_id = d.id " +
+            "where sd.setmeal_id = #{setmealId}")
+    List<DishItemVO> getDishItemBySetmealId(Long id);
 }

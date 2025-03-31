@@ -20,7 +20,7 @@ import java.util.List;
  * @author: Excell
  * @data 2025年03月18日 18:55
  */
-@RestController
+@RestController("adminCategoryController")
 @RequestMapping("/admin/category")
 @Api(tags = "菜品分类相关接口")
 @Validated

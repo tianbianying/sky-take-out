@@ -144,6 +144,7 @@ public class CategoryServiceImpl implements CategoryService {
     public List getCategoryByType(Integer type) {
         return categoryMapper.getListByType(type);
     }
+    
 }
 
 

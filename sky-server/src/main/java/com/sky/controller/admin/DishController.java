@@ -23,7 +23,7 @@ import java.util.List;
  * @author: Excell
  * @data 2025年03月20日 09:20
  */
-@RestController
+@RestController("adminDishController")
 @RequestMapping("/admin/dish")
 @Api(tags = "菜品相关接口")
 @Validated

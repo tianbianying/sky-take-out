@@ -21,7 +21,7 @@ import java.util.List;
  * @author: Excell
  * @data 2025年03月21日 15:46
  */
-@RestController
+@RestController("adminSetmealController")
 @RequestMapping("/admin/setmeal")
 @Api(tags = "套餐相关接口")
 @Validated

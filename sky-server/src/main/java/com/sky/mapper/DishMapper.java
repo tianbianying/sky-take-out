@@ -96,6 +96,14 @@ public interface DishMapper {
     @AutoAnnotation(OperationType.UPDATE)
     void update(Dish dish);
 
+    /**
+     * 动态条件查询菜品
+     *
+     * @param dish
+     * @return
+     */
+    List<Dish> listByDish(Dish dish);
+
 
 }
 
