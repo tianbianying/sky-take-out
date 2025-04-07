@@ -17,7 +17,7 @@ sky:
     appid: ${APPID}
     secret: ${SECRET}
   redis:
-    host: 192.168.203.128
+    host: 192.168.203.131
     port: 6379
     password: 123456
     lettuce-pool:
