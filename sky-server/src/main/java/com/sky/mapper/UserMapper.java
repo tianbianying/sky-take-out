@@ -24,4 +24,12 @@ public interface UserMapper {
     @Insert("insert into user(openid, create_time) values  (#{openid}, #{createTime})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     void insert(User user);
+
+    /**
+     * @description: 根据用户id查询用户
+     * @title: getById
+     * @param: [userId]
+     */
+    @Select("select * from user where id=#{userId}")
+    User getById(Long userId);
 }
