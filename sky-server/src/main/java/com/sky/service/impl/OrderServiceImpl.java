@@ -5,35 +5,29 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.sky.constant.JwtClaimsConstant;
 import com.sky.constant.MessageConstant;
-import com.sky.context.BaseContext;
-import com.sky.dto.OrdersPageQueryDTO;
-import com.sky.dto.OrdersPaymentDTO;
-import com.sky.dto.OrdersSubmitDTO;
+import com.sky.dto.*;
 import com.sky.entity.*;
 import com.sky.exception.AddressBookBusinessException;
-import com.sky.exception.OrderBusinessException;
 import com.sky.exception.ShoppingCartBusinessException;
 import com.sky.mapper.*;
 import com.sky.result.PageResult;
 import com.sky.service.OrderService;
 import com.sky.utils.ThreadLocalUtil;
-import com.sky.utils.WeChatPayUtil;
 import com.sky.vo.OrderPaymentVO;
+import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.lang.reflect.Array;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -205,10 +199,24 @@ public class OrderServiceImpl implements OrderService {
     public PageResult getOrderHistory(OrdersPageQueryDTO ordersPageQueryDTO) {
         PageHelper.startPage(ordersPageQueryDTO.getPage(), ordersPageQueryDTO.getPageSize());
         // 1.获取用户id
-        Long userId = Long.valueOf(((Map) ThreadLocalUtil.get()).get(JwtClaimsConstant.USER_ID).toString());
-        ordersPageQueryDTO.setUserId(userId);
+        try {
+            // 从 ThreadLocal 中获取数据并转换为 Long 类型的用户ID
+            Long userId = Long.valueOf(((Map) ThreadLocalUtil.get()).get(JwtClaimsConstant.USER_ID).toString());
+
+            // 如果获取到的 userId 是有效的，则设置到 ordersPageQueryDTO
+            ordersPageQueryDTO.setUserId(userId);
+        } catch (NumberFormatException | NullPointerException e) {
+            // 捕获 NumberFormatException 或 NullPointerException，表示无法从 ThreadLocal 获取有效的用户ID
+            // 如果需要，可以记录日志或抛出自定义异常
+            // 如果不设置用户ID，则不做任何操作
+            // 可选：可以在这里抛出一个 RuntimeException 或记录日志
+            // logger.error("Failed to retrieve valid userId from ThreadLocal", e);
+        } finally {
+            // 可选的 finally 块，执行清理工作等
+        }
+
         // 2.根据id获取用户历史订单
-        List<Orders> orders = orderMapper.getOrderByUserId(ordersPageQueryDTO);
+        List<Orders> orders = orderMapper.getOrderPage(ordersPageQueryDTO);
         Page<OrderVO> orderVOS = new Page<>();
         // 3.根据订单id查询订单详情
         orders.forEach(order -> {
@@ -245,5 +253,130 @@ public class OrderServiceImpl implements OrderService {
             shoppingCartMapper.insert(shoppingCart);
         });
     }
+
+    /**
+     * @description: 接单
+     * @title: updateStatus
+     * @param: [id]
+     */
+    @Override
+    public void updateStatus(Orders orders) {
+        orders.setStatus(Orders.CONFIRMED);
+        orderMapper.update(orders);
+    }
+
+    /**
+     * @description: 订单取消
+     * @title: cancellationOfOrder
+     * @param: [ordersCancelDTO]
+     */
+    @Transactional
+    @Override
+    public void cancellationOfOrder(OrdersCancelDTO ordersCancelDTO) {
+        processOrderRefundAndUpdate(
+                ordersCancelDTO.getId(),
+                Orders.CANCELLED,
+                orders -> {
+                    orders.setCancelReason(ordersCancelDTO.getCancelReason());
+                }
+        );
+    }
+
+    /**
+     * @description: 拒单
+     * @title: decliningTheOrder
+     * @param: [ordersRejectionDTO]
+     */
+    @Transactional
+    @Override
+    public void decliningTheOrder(OrdersRejectionDTO ordersRejectionDTO) {
+        processOrderRefundAndUpdate(
+                ordersRejectionDTO.getId(),
+                Orders.CANCELLED,
+                orders -> {
+                    orders.setRejectionReason(ordersRejectionDTO.getRejectionReason());
+                }
+        );
+    }
+
+    /**
+     * @description: 查询各个状态订单的数量
+     * @title: getStatusCount
+     * @param: []
+     */
+    @Override
+    public OrderStatisticsVO getStatusCount() {
+        Integer toBeConfirmedCount = orderMapper.getCount(Orders.TO_BE_CONFIRMED);
+        Integer confirmedCount = orderMapper.getCount(Orders.CONFIRMED);
+        Integer deliveryInProgressCount = orderMapper.getCount(Orders.DELIVERY_IN_PROGRESS);
+
+        return OrderStatisticsVO
+                .builder()
+                .toBeConfirmed(toBeConfirmedCount)
+                .confirmed(confirmedCount)
+                .deliveryInProgress(deliveryInProgressCount)
+                .build();
+    }
+
+    /**
+     * @description: 派送订单
+     * @title: delivery
+     * @param: [id]
+     */
+    @Override
+    public void delivery(Long id) {
+        Orders orders = Orders.
+                builder()
+                .id(id)
+                .status(Orders.DELIVERY_IN_PROGRESS)
+                .build();
+        orderMapper.update(orders);
+    }
+
+    /**
+     * @description: 完成订单
+     * @title: complete
+     * @param: [id]
+     */
+    @Override
+    public void complete(Long id) {
+        Orders orders = Orders.
+                builder()
+                .id(id)
+                .status(Orders.COMPLETED)
+                .build();
+        orderMapper.update(orders);
+    }
+
+    /**
+     * 通用退款处理 + 状态更新逻辑
+     */
+    private void processOrderRefundAndUpdate(Long orderId, Integer newStatus, Consumer<Orders> reasonSetter) {
+        Orders ordersDB = orderMapper.getOrderById(orderId);
+        if (ordersDB == null) {
+            throw new RuntimeException("订单不存在，ID: " + orderId);
+        }
+
+        if (ordersDB.getPayStatus() != null && ordersDB.getPayStatus() == 1) {
+            // 模拟退款
+            log.info("给订单{}退款", ordersDB.getNumber());
+
+            // 真退款时调用微信接口
+            // String refund = weChatPayUtil.refund(...);
+            // log.info("申请退款：{}", refund);
+        }
+
+        Orders updateOrder = new Orders();
+        updateOrder.setId(orderId);
+        updateOrder.setPayStatus(Orders.REFUND);
+        updateOrder.setStatus(newStatus);
+        updateOrder.setCancelTime(LocalDateTime.now());
+
+        // 设置取消/拒绝原因
+        reasonSetter.accept(updateOrder);
+
+        orderMapper.update(updateOrder);
+    }
+
 
 }

@@ -58,10 +58,10 @@ public interface OrderMapper {
 
     /**
      * @description: 根据用户id获取订单
-     * @title: getOrderByUserId
+     * @title: getOrderPage
      * @param: [ordersPageQueryDTO]
      */
-    List<Orders> getOrderByUserId(OrdersPageQueryDTO ordersPageQueryDTO);
+    List<Orders> getOrderPage(OrdersPageQueryDTO ordersPageQueryDTO);
 
     /**
      * @description: 根据id查询订单
@@ -70,4 +70,20 @@ public interface OrderMapper {
      */
     @Select("select * from orders where id=#{id}")
     Orders getOrderById(Long id);
+
+    /**
+     * @description: 根据状态查询订单数量
+     * @title: getCount
+     * @param: [status]
+     */
+    @Select("select count(*) from orders where status = #{status}")
+    Integer getCount(Integer status);
+
+    /**
+     * @description: 通过时间和状态查找订单类
+     * @title: getByOvertimeStatus
+     * @param: [pendingPayment, localDateTime]
+     */
+    @Select("select * from orders where status = #{pendingPayment} and order_time < #{localDateTime}")
+    List<Orders> getByOvertimeStatus(Integer pendingPayment, LocalDateTime localDateTime);
 }
