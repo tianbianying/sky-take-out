@@ -15,13 +15,11 @@ import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.Authorization;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * @description: 订单相关接口
@@ -139,6 +137,18 @@ public class OrderController {
     @ApiOperation("再来一单")
     public Result oneMoreOrder(@PathVariable Long id) {
         orderService.oneMoreOrder(id);
+        return Result.success();
+    }
+
+    /**
+     * @description: 催单
+     * @title: reminder
+     * @param: [id]
+     */
+    @GetMapping("/reminder/{id}")
+    @ApiOperation("催单")
+    public Result reminder(@PathVariable Long id){
+        orderService.reminder(id);
         return Result.success();
     }
 

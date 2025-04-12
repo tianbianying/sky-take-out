@@ -1,5 +1,6 @@
 package com.sky.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -8,6 +9,7 @@ import com.sky.constant.MessageConstant;
 import com.sky.dto.*;
 import com.sky.entity.*;
 import com.sky.exception.AddressBookBusinessException;
+import com.sky.exception.OrderBusinessException;
 import com.sky.exception.ShoppingCartBusinessException;
 import com.sky.mapper.*;
 import com.sky.result.PageResult;
@@ -17,6 +19,7 @@ import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
+import com.sky.websocket.WebSocketServer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -48,9 +52,11 @@ public class OrderServiceImpl implements OrderService {
     OrderDetailMapper orderDetailMapper;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private WebSocketServer webSocketServer;
 
     /**
-     * @description: 提交订单
+     * @description: 下单，返回订单编号
      * @title: submit
      * @param: [ordersSubmitDTO]
      */
@@ -106,7 +112,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 订单支付
+     * 订单支付，这个函数调用完毕返回后，用户界面就显示出支付界面
      *
      * @param ordersPaymentDTO
      * @return
@@ -144,11 +150,19 @@ public class OrderServiceImpl implements OrderService {
 
         log.info("调用updateStatus，用于替换微信支付更新数据库状态的问题");
         orderMapper.updateStatus(OrderStatus, OrderPaidStatus, check_out_time, orderNumber);
+        Orders orders = orderMapper.getByNumber(orderNumber);
+        Map map = new HashMap<>();
+        map.put("type", 1);
+        map.put("orderId", orders.getId());
+        map.put("content", "订单号：" + orderNumber);
+        String json = JSON.toJSONString(map);
+
+        webSocketServer.sendToAllClient(json);
         return vo;
     }
 
     /**
-     * 支付成功，修改订单状态
+     * 支付成功，修改订单状态，这个方法因为修改所以没有用到
      *
      * @param outTradeNo
      */
@@ -346,6 +360,28 @@ public class OrderServiceImpl implements OrderService {
                 .status(Orders.COMPLETED)
                 .build();
         orderMapper.update(orders);
+    }
+
+    /**
+     * @description: 催单
+     * @title: reminder
+     * @param: [id]
+     */
+    @Override
+    public void reminder(Long id) {
+        Orders orders = orderMapper.getOrderById(id);
+        if (orders == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
+        // 获取订单号码
+        Map map = new HashMap<>();
+        map.put("type", 1);
+        map.put("orderId", orders.getId());
+        map.put("content", "订单号：" + orders.getNumber());
+        String json = JSON.toJSONString(map);
+
+        webSocketServer.sendToAllClient(json);
     }
 
     /**

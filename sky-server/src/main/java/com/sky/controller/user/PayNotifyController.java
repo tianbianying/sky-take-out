@@ -30,7 +30,7 @@ public class PayNotifyController {
     private WeChatProperties weChatProperties;
 
     /**
-     * 支付成功回调
+     * 支付成功回调，根据支付结果更新订单数据
      *
      * @param request
      */
